@@ -55,10 +55,16 @@ def run_experiment(**kwargs):
     data=np.zeros((duration*200, len(receive_data_columns)),dtype=float) #change for number of inputs
     clock=np.zeros(duration*200,dtype='timedelta64[ns]')
     i=0
-    start = time.monotonic_ns()
-    ser.write(pack(send_data_format, kwargs['position'], ErrorFunction[kwargs['mode']].value, kwargs['torque']))
+    # Clear any stale data before starting
     ser.reset_input_buffer()
+    ser.write(pack(send_data_format, kwargs['position'], ErrorFunction[kwargs['mode']].value, kwargs['torque']))
     time.sleep(0.1)
+    ser.reset_input_buffer()  # Clear again after Arduino starts responding
+    time.sleep(0.05)
+    # Discard first few packets to ensure alignment
+    for _ in range(5):
+        ser.read(receive_data_size)
+    start = time.monotonic_ns()
     while clock[i-1] < duration_ns and i < data.shape[0]:
         b = ser.read(receive_data_size)
         data[i, :] = struct.unpack(receive_data_format, b)
