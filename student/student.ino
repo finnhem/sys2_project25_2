@@ -1,9 +1,14 @@
+#include <Servo.h>
+#include <Arduino.h>
+
 #include <SignalSource.h>
 #include <math.h>
 
 
 // Global Variables
 //TODO
+float MAX_POSITION = 1042.0;
+float OFFSET = MAX_POSITION / 2;
 
 //Resets the controller state when an experiment is started.
 void reset(){
@@ -16,9 +21,13 @@ void reset(){
  * @param position The original position value to be rescaled.
  * @return The rescaled position value, adjusted to remain within a range of 0 to 360.
  */
-float rescalepos(int16_t position){  //rescaling function
-  //TODO
-  return 0;
+ float rescalepos(int16_t position) {
+  if (MAX_POSITION == 0) return 0.0f;                // guard (minimal)
+  const float scale = 360.0f / (float)MAX_POSITION;
+  float scaled = (position - (float)OFFSET) * scale + 180.0f;
+  scaled = fmodf(scaled, 360.0f);                   // reduce magnitude
+  if (scaled < 0.0f) scaled += 360.0f;              // map to [0,360)
+  return scaled;
 }
 
 /**
