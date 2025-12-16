@@ -2,13 +2,23 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
 {
 	"name": "Ubuntu",
-	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+	// Use Dockerfile to ensure USB device permissions are set correctly
+	"build": {
+		"dockerfile": "Dockerfile",
+		"context": ".."
+	},
 	"features": {
 		"ghcr.io/devcontainers/features/python:1": {
 			"version": "3.10"
 		}
-	}
+	},
+
+	// Pass all USB devices to container for Arduino access
+	// On Linux: mounts /dev to access all devices including /dev/ttyACM0, /dev/ttyUSB0, etc.
+	// On Windows: Docker Desktop handles COM ports automatically when using privileged mode
+	"runArgs": [
+		"--privileged"
+	],
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
@@ -16,8 +26,11 @@
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "uname -a",
+	// Install Python dependencies and fix USB device permissions after container creation
+	"postCreateCommand": "pip install -r requirements.txt && bash .devcontainer/fix-usb-permissions.sh",
+	
+	// Fix USB permissions every time container starts (in case device was replugged)
+	"postStartCommand": "bash .devcontainer/fix-usb-permissions.sh",
 
 	// Configure tool-specific properties.
 	// "customizations": {},

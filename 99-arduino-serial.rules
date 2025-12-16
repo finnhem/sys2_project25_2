@@ -1,0 +1,22 @@
+# udev rules for Arduino USB serial devices
+# Install this file on your HOST system (not in the container) to make permissions permanent
+# 
+# Installation (on Linux host):
+#   sudo cp 99-arduino-serial.rules /etc/udev/rules.d/
+#   sudo udevadm control --reload-rules
+#   sudo udevadm trigger
+#
+# This ensures Arduino devices are accessible to users in the 'dialout' group
+
+# Arduino devices (ATmega based - /dev/ttyACM*)
+SUBSYSTEM=="tty", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0043", MODE="0664", GROUP="dialout"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0001", MODE="0664", GROUP="dialout"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0036", MODE="0664", GROUP="dialout"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0243", MODE="0664", GROUP="dialout"
+
+# Generic USB serial devices (/dev/ttyUSB*)
+SUBSYSTEM=="tty", KERNEL=="ttyUSB*", MODE="0664", GROUP="dialout"
+
+# Generic CDC ACM devices (/dev/ttyACM*)
+SUBSYSTEM=="tty", KERNEL=="ttyACM*", MODE="0664", GROUP="dialout"
+
