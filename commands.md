@@ -9,3 +9,9 @@ Port is open True
 
 ## A2.3
 python plotData.py --device /dev/ttyACM0 --duration 10 ERROR1
+
+## A3.1
+python plotData.py --device /dev/ttyACM0 --duration 10 --torque 7 --position 400 PYTHON_TORQUE
+
+## A3.2
+python plotData.py --device /dev/ttyACM0 --duration 10 --position 400 NO_ERROR
