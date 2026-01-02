@@ -169,6 +169,10 @@ int16_t controller(int16_t error, int16_t error_i, int16_t error_d, int16_t meas
   // PID control law (discrete-time):
   // u(k) = Kp * e(k) + Ki * integral_sum + Kd * (de/dt)
 
+  const float Kp = 0.955;
+  const float Ki = 0.26;
+  const float Kd = 0.06;
+
   // P-component
   float P = Kp * (float)error;
   //P = 0.7f * P;
