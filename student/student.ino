@@ -33,6 +33,9 @@ const float Kd = Kp * Td;        // Derivative component
 // Sampling time
 float dt = 0.005;
 
+// Error deadband in encoder counts to prevent jitter around setpoint
+static const int16_t ERROR_DEADBAND_COUNTS = 4;
+
 
 // State variables for controller
 static int16_t prev_error = 0;       // Previous error for derivative
@@ -103,6 +106,11 @@ int16_t calculate_error(int16_t setpoint, int16_t currentpos){
     error += max_pos;
   }
 
+  // Deadband: ignore tiny errors (encoder counts)
+  if (abs(error) <= ERROR_DEADBAND_COUNTS) {
+    error = 0;
+  }
+
   return error;
 }
 
@@ -169,7 +177,7 @@ int16_t controller(int16_t error, int16_t error_i, int16_t error_d, int16_t meas
   // PID control law (discrete-time):
   // u(k) = Kp * e(k) + Ki * integral_sum + Kd * (de/dt)
 
-  const float Kp = 0.955;
+  const float Kp = 0.095;
   const float Ki = 0.26;
   const float Kd = 0.06;
 
@@ -186,6 +194,15 @@ int16_t controller(int16_t error, int16_t error_i, int16_t error_d, int16_t meas
 
   // D-component (error_d is the derivative)
   float D = Kd * (float)error_d;
+  // Low-pass filter on D-term to reduce noise
+  const float alpha = 0.15f; // Smoothing factor (0 < alpha < 1)
+  D = alpha * D + (1.0f - alpha) * prev_D;
+
+  // Deadband for D-term to prevent jitter
+  if (abs(error) < ERROR_DEADBAND_COUNTS)
+    D = 0;
+
+  prev_D = D;
   //D = 0.01f * D;
   //D = 0.0f;
   
@@ -201,7 +218,7 @@ int16_t controller(int16_t error, int16_t error_i, int16_t error_d, int16_t meas
   // Deadzone Compensation
   // Negative torque needs -6 start, Positive needs +1 start
   if (torque<-1.0) {
-    torque -= 6.0; 
+    torque -= 5.0; 
   }
 
   // Limiting to actuator limits (-20 to 20)
